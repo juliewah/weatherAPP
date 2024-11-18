@@ -4,7 +4,7 @@ import { ref } from 'vue'
 export const useWeatherStore = defineStore('weatherInfo', () => {
     const location = ref(null)
     const errorMsg = ref(null)
-    const currentWeather = ref(null)
+    const currentWeather = ref({})
     const city = ref(null)
 
     const setLocation = (newLocation) => {
@@ -54,14 +54,18 @@ export const useWeatherStore = defineStore('weatherInfo', () => {
     const fetchWeatherData = async () => {
         if(location.value){
             const apiUrl = import.meta.env.VITE_WEATHER_API_URL
-            const apiKey = import.meta.env.VITE_API_KEY
+            const apiKey = import.meta.env.VITE_WEATHER_API_KEY
             const error = ref(null)
             try{
                 const res = await fetch(
                     `${apiUrl}lat=${location.value.latitude}&lon=${location.value.longitude}&units=metric&appid=${apiKey}`
                 )
                 const json = await res.json()
-                currentWeather.value = json.current
+                Object.assign(currentWeather.value, {
+                    temp: json.main.temp,
+                    description: json.weather[0].description,
+                    icon: json.weather[0].icon,
+                });
             } catch(err) {
                 error.value = err.message
                 console.log(error)
